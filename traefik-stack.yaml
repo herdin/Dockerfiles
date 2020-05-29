@@ -1,0 +1,28 @@
+## traefik.yml
+
+# Docker configuration backend
+providers:
+  docker:
+    endpoint: "unix:///var/run/docker.sock"
+    exposedByDefault: false
+    network: proxy
+    swarmMode: true
+
+# API and dashboard configuration
+api:
+  insecure: true
+  dashboard: true
+
+log:
+  filePath: "/path/to/traefik.log"
+  level: DEBUG #DEBUG, PANIC, FATAL, ERROR, WARN, INFO.
+
+accessLog:
+  filePath: "/path/to/access.log"
+  bufferingSize: 100
+
+entryPoints:
+  web:
+    address: ":80"
+  msa-example:
+    address: ":8090"

@@ -1,0 +1,67 @@
+version: '3'
+
+services:
+    reverse-proxy:
+        image: traefik:v2.0
+        networks:
+            - <MY-NETWORK>
+        ports:
+            - 8080:8080 #traefik web ui
+            - 8090:8090
+        volumes:
+            - /var/run/docker.sock:/var/run/docker.sock # So that Traefik can listen to the Docker events
+            - ./traefik-stack.yaml:/etc/traefik/traefik.yaml #traefik static config
+        deploy:
+            mode: replicated
+            replicas: 1
+            placement:
+                constraints: [node.role == manager]
+                
+    mas-0:
+        image: <MY-IMAGE-0-ID>:<MY-IMAGE-0-TAG>
+        networks:
+            - <MY-NETWORK>
+        environment:
+            - <MY-ENVIROMENTS>
+        deploy:
+            replicas: 3
+            labels:
+                - "traefik.enable=true"
+                - "traefik.http.routers.msa-0.rule=Host(`<MY-SERVICE-0-HOST>`)"
+                - "traefik.http.routers.msa-0.entrypoints=msa-0"
+                - "traefik.http.services.msa-0.loadbalancer.server.port=8090"
+                - "traefik.http.services.msa-0.loadbalancer.sticky.cookie=true"
+                - "traefik.http.services.msa-0.loadbalancer.sticky.cookie.httponly=true"
+                - "traefik.http.services.msa-0.loadbalancer.sticky.cookie.name=myStickyCookieName"
+                
+    mas-1:
+        image: <MY-IMAGE-1-ID>:<MY-IMAGE-1-TAG>
+        networks:
+            - <MY-NETWORK>
+        environment:
+            - <MY-ENVIROMENTS>
+        deploy:
+            replicas: 1
+            labels:
+                - "traefik.enable=true"
+                - "traefik.http.routers.msa-1.rule=Host(`<MY-SERVICE-1-HOST>`)"
+                - "traefik.http.routers.msa-1.entrypoints=msa-0"
+                - "traefik.http.services.msa-1.loadbalancer.server.port=8090"
+                
+    mas-2:
+        image: <MY-IMAGE-2-ID>:<MY-IMAGE-2-TAG>
+        networks:
+            - <MY-NETWORK>
+        environment:
+            - <MY-ENVIROMENTS>
+        deploy:
+            replicas: 1
+            labels:
+                - "traefik.enable=true"
+                - "traefik.http.routers.msa-card.rule=Host(`<MY-SERVICE-2-HOST>`)"
+                - "traefik.http.routers.msa-card.entrypoints=msa-0"
+                - "traefik.http.services.msa-card.loadbalancer.server.port=8090"
+                
+networks:
+    <MY-NETWORK>:
+        external: true

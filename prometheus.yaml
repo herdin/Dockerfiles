@@ -1,0 +1,30 @@
+# 전역 설정
+global:
+  scrape_interval:     15s # 15초마다 매트릭을 수집한다. 기본은 1분.
+  evaluation_interval: 15s # 15초마다 규칙을 평가한다. 기본은 1분.
+
+  # 외부 시스템에 표시할 이 서버의 레이블
+  external_labels:
+      monitor: 'msa-monitor'
+
+# 규칙을 로딩하고 'evaluation_interval' 설정에 따라 정기적으로 평가한다.
+rule_files:
+  # - "first.rules"
+  # - "second.rules"
+
+# 매트릭을 수집할 엔드포인드
+scrape_configs:
+  - job_name: 'node-exporter'
+    dns_sd_configs:
+    - names:
+      - 'tasks.node-exporter'
+      type: 'A'
+      port: 9100
+#  - job_name: 'prometheus-node-exporter'
+#    # metrics_path의 기본 경로는 '/metrics'이고 scheme의 기본값은 `http`다
+#    static_configs:
+#      - targets: ['localhost:9090']
+
+#  - job_name: 'node-exporter'
+#    static_configs:
+#      - targets: ['msa.example.anmani.link:9100']
